@@ -11,6 +11,8 @@
 </template>
 
 <script>
+import { createDecipheriv } from 'crypto'
+
 export default {
   name: 'IndexPage',
     data() {
@@ -22,14 +24,11 @@ export default {
     flg() {
       return this.$store.getters['game/flg']
     },
-    // numBack() {
-    //   return this.$store.getters['game/numBack']
-    // },
-    // numOpened() {
-    //   return this.$store.getters['game/numOpened']
-    // },
     cardPairs() {
       return this.$store.getters['game/cardPairs']
+    },
+    count() {
+      return this.$store.getters['game/count']
     }
   },
   methods: {
@@ -37,6 +36,10 @@ export default {
       this.$store.dispatch('game/fripCard', { cardNumber: idx })
       // this.$store.dispatch('game/memory')
     },
-  }
+  },
+  created() {
+    // console.log('created') //ライフサイクル
+    this.$store.dispatch('game/initializer')
+  },
 }
 </script>

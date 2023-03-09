@@ -5,24 +5,18 @@ const OPENED = 2
 export const state = () => ({
     flg: [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED],
     cardPairs: [0,0,1,1,2,2,3,3],
+    count: 0,
 })
 
 export const getters = {
     flg(state) {
         return state.flg
     },
-    // numBack(state) {
-    //     const flg = state.flg
-    //     const filter = flg.filter((num) => num === 1)
-    //     return filter.length
-    // },
-    // numOpened(state) {
-    //     const flg = state.flg
-    //     const filter = flg.filter((num) => num === 2)
-    //     return filter.length
-    // },
     cardPairs(state) {
         return state.cardPairs
+    },
+    count(state) {
+        return state.count
     },
 }
 
@@ -30,19 +24,19 @@ export const mutations = {
     flg(state, { newFlg }) {
         state.flg = newFlg
     },
-    // numBack(state, { newnumBack }) {
-    //     state.numBack = newnumBack
-    // },
-    // numOpened(state, { newnumOpened }) {
-    //     state.numOpened = newnumOpened
-    // },
     cardPairs(state, { newcardPairs }) {
         state.cardPairs = newcardPairs
+    },
+    count(state, { newCount}) {
+        state.count = newCount
     },
 }
 
 export const actions = {
     fripCard ({ commit, state }, { cardNumber }) {
+
+        //fripCard
+
         const selectedCardState = state.flg[cardNumber]
         let nextCardState = null
         //クリックされたカードを裏返す
@@ -63,9 +57,9 @@ export const actions = {
             return nextCardState
         })
 
-        // let newnumOpened = getters.numOpened
-        const newcardPairs = state.cardPairs
+        //memory
 
+        const newcardPairs = state.cardPairs
         //calcnumBack
         let filter = newFlg.filter((num) => num === BACK)
         const numBack = filter.length
@@ -79,14 +73,10 @@ export const actions = {
             if (newcardPairs[firstindex] === newcardPairs[lastindex]) {
                 newFlg[firstindex] = OPENED
                 newFlg[lastindex] = OPENED
-                // console.log(2)
-                // newnumOpened += 2
-                // newnumBack = 0
             }
             else {
                 newFlg[firstindex] = CLOSED
                 newFlg[lastindex] = CLOSED
-                // newnumBack = 0
             }
         }
         //終了条件
@@ -95,49 +85,29 @@ export const actions = {
         const numOpened = filter.length
         if (numOpened === 8) {
             newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
-            // newnumOpened = 0
         }
 
-        //newFlgの値を引き継ぐ
+        const newCount = state.count + 1
 
-        // let newnumBack = getters.numBack
-        
         // newを作っておく
         commit('flg', { newFlg })
-        // commit('numBack', { newnumBack })
-        // commit('numOpened', { newnumOpened })
+        commit('cardPairs', { newcardPairs })
+        commit('count', { newCount })
+    },
+    initializer ({commit, state}) {
+        //カードをすべて裏にする
+        const newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
+        //カードのペアをシャッフルする
+        let newcardPairs = state.cardPairs
+        for (let i = 1; i < newcardPairs.length; i++) {
+            const index = newcardPairs[Math.floor(Math.random() * (newcardPairs.length - i)) + i]
+            const stack = newcardPairs[index]
+            newcardPairs[index] = newcardPairs[i]
+            newcardPairs[i] = stack
+        }
+        console.log('シャッフル後' + newcardPairs)
+        //commit
+        commit('flg', { newFlg })
         commit('cardPairs', { newcardPairs })
     },
-    // memory ({commit, state }) {
-    //     const newcardPairs = state.cardPairs
-    //     //calcnumBack
-    //     let filter = newFlg.filter((num) => num === BACK)
-    //     const numBack = filter.length
-    //     //神経衰弱
-    //     if (numBack === 2) {
-    //         console.log(1)
-    //         // backになっているカードのインデックスを取得
-    //         const firstindex = newFlg.indexOf(BACK)
-    //         const lastindex = newFlg.lastIndexOf(BACK)
-    //         //2枚のカードの柄が同じだったら
-    //         if (newcardPairs[firstindex] === newcardPairs[lastindex]) {
-    //             newFlg[firstindex] = OPENED
-    //             newFlg[lastindex] = OPENED
-    //         }
-    //         else {
-    //             newFlg[firstindex] = CLOSED
-    //             newFlg[lastindex] = CLOSED
-    //         }
-    //     }
-    //     //終了条件
-    //     //calcnumOpened
-    //     filter = newFlg.filter((num) => num === OPENED)
-    //     const numOpened = filter.length
-    //     if (numOpened === 8) {
-    //         newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
-    //     }
-    //     // newを作っておく
-    //     commit('flg', { newFlg })
-    //     commit('cardPairs', { newcardPairs })
-    // }
 }
