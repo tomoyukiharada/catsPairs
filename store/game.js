@@ -6,6 +6,7 @@ export const state = () => ({
     flg: [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED],
     cardPairs: [0,0,1,1,2,2,3,3],
     count: 0,
+    isReact: true,
 })
 
 export const getters = {
@@ -17,6 +18,9 @@ export const getters = {
     },
     count(state) {
         return state.count
+    },
+    isReact(state) {
+        return state.isReact
     },
 }
 
@@ -30,46 +34,19 @@ export const mutations = {
     count(state, { newCount}) {
         state.count = newCount
     },
+    isReact(state, { newIsReact }) {
+        state.isReact = newIsReact
+    },
 }
 
 export const actions = {
     fripCard ({ commit, state }, { cardNumber }) {
 
-        //fripCard
-
-        const selectedCardState = state.flg[cardNumber]
-        let nextCardState = null
-        //クリックされたカードを裏返す
-        if (selectedCardState === CLOSED) {
-            nextCardState = BACK
-        }
-        else if (selectedCardState === BACK) {
-            nextCardState = BACK
-        }
-        else if (selectedCardState === OPENED) {
-            nextCardState = OPENED
-        }
-        //フラグの更新
-        let newFlg =state.flg.map((flg, idx) => {
-            if (idx !== cardNumber) {
-                return flg
-            }
-            return nextCardState
-        })
-
-        //memory
-
-        const newcardPairs = state.cardPairs
-        //calcnumBack
-        let filter = newFlg.filter((num) => num === BACK)
-        const numBack = filter.length
-        //神経衰弱
-        if (numBack === 2) {
-            // console.log(1)
-            // backになっているカードのインデックスを取得
-            const firstindex = newFlg.indexOf(BACK)
-            const lastindex = newFlg.lastIndexOf(BACK)
-            //2枚のカードの柄が同じだったら
+        //isPair
+        let newIsReact = state.isReact
+        let newFlg = state.flg
+        //function
+        function isPair(newcardPairs, firstindex, lastindex) {
             if (newcardPairs[firstindex] === newcardPairs[lastindex]) {
                 newFlg[firstindex] = OPENED
                 newFlg[lastindex] = OPENED
@@ -78,21 +55,70 @@ export const actions = {
                 newFlg[firstindex] = CLOSED
                 newFlg[lastindex] = CLOSED
             }
-        }
-        //終了条件
-        //calcnumOpened
-        filter = newFlg.filter((num) => num === OPENED)
-        const numOpened = filter.length
-        if (numOpened === 8) {
-            newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
+            commit('flg', { newFlg })
+
+            //終了条件
+            //calcnumOpened
+            let filter = newFlg.filter((num) => num === OPENED)
+            const numOpened = filter.length
+            if (numOpened === 8) {
+                //initializer
+                newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
+            }
+            commit('flg', { newFlg })
+
+            newIsReact = true
+            commit('isReact', { newIsReact })
+
+            //count
+            const newCount = state.count + 1
+            commit('count', { newCount })   
         }
 
-        const newCount = state.count + 1
+        if (newIsReact) {
+            //fripCard
 
-        // newを作っておく
-        commit('flg', { newFlg })
-        commit('cardPairs', { newcardPairs })
-        commit('count', { newCount })
+            const selectedCardState = state.flg[cardNumber]
+            let nextCardState = null
+            //クリックされたカードを裏返すか？
+            if (selectedCardState === CLOSED) {
+                nextCardState = BACK
+            }
+            else if (selectedCardState === BACK) {
+                nextCardState = BACK
+            }
+            else if (selectedCardState === OPENED) {
+                nextCardState = OPENED
+            }
+            //フラグの更新
+            let newFlg =state.flg.map((flg, idx) => {
+                if (idx !== cardNumber) {
+                    return flg
+                }
+                return nextCardState
+            })
+
+            //memory
+            const newcardPairs = state.cardPairs
+            //calcnumBack
+            let filter = newFlg.filter((num) => num === BACK)
+            const numBack = filter.length
+            //神経衰弱
+            if (numBack === 2) {
+                // backになっているカードのインデックスを取得
+                const firstindex = newFlg.indexOf(BACK)
+                const lastindex = newFlg.lastIndexOf(BACK)
+                //2枚のカードの柄は同じか？
+                newIsReact = false
+                setTimeout(isPair, 1000, newcardPairs, firstindex, lastindex)
+            }
+
+            //commit
+            commit('flg', { newFlg })
+            commit('cardPairs', { newcardPairs })
+        }
+        // commmit
+        commit('isReact', { newIsReact })
     },
     initializer ({commit, state}) {
         //カードをすべて裏にする

@@ -29,6 +29,9 @@ export default {
     },
     count() {
       return this.$store.getters['game/count']
+    },
+    isReact() {
+      return this.$store.getters['game/isReact']
     }
   },
   methods: {
