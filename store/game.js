@@ -3,11 +3,12 @@ const BACK   = 1
 const OPENED = 2
 
 export const state = () => ({
-    flg: [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED],
-    cardPairs: [0,0,1,1,2,2,3,3],
+    flg: [],
+    cardPairs: [],
     count: 0,
     isReact: true,
     imgSrc: [],
+    howManyCards: 8
 })
 
 export const getters = {
@@ -26,6 +27,9 @@ export const getters = {
     imgSrc(state) {
         return state.imgSrc
     },
+    howManyCards(state) {
+        return state.howManyCards
+    }
 }
 
 export const mutations = {
@@ -44,6 +48,9 @@ export const mutations = {
     imgSrc(state, { newImgSrc }) {
         state.imgSrc = newImgSrc
     },
+    howManyCards(state, {newHowManyCards}) {
+        state.howManyCards = newHowManyCards
+    }
 }
 
 export const actions = {
@@ -67,13 +74,14 @@ export const actions = {
             //count
             const newCount = state.count + 1
             commit('count', { newCount })
+            if (((newFlg.length) * 3 / 2) < newCount) location.reload() //トライできるのは**回まで
 
             //終了条件
             //calcnumOpened
             let filter = newFlg.filter((num) => num === OPENED)
             const numOpened = filter.length
             // if (numOpened === 8) actions.initializer({ commit, state })
-            if (numOpened === 8) location.reload()
+            if (numOpened === (newFlg.length)) setTimeout(location.reload(),1000)
 
             newIsReact = true
             commit('isReact', { newIsReact })
@@ -121,19 +129,26 @@ export const actions = {
         }
         commit('isReact', { newIsReact })
     },
-    async initializer ({commit, state}) {
-        const newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
-        
-        let newcardPairs = state.cardPairs
-        for (let i = 1; i < newcardPairs.length; i++) {
-            const index = newcardPairs[Math.floor(Math.random() * (newcardPairs.length - i)) + i]
+    async initializer ({ commit, state }) {
+        const howManyCards = state.howManyCards
+        let newFlg = []
+        for (let i = 0; i < howManyCards; i++) {
+            newFlg.push(CLOSED)
+        }
+        let newcardPairs = []
+        for (let i = 0; i < (howManyCards / 2); i++) {
+            newcardPairs.push(i)
+            newcardPairs.push(i)
+        }
+        for (let i = 1; i < howManyCards; i++) {
+            const index = newcardPairs[Math.floor(Math.random() * (howManyCards - i)) + i]
             const stack = newcardPairs[index]
             newcardPairs[index] = newcardPairs[i]
             newcardPairs[i] = stack
         }
 
         let newImgSrc = []
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < (howManyCards / 2); i++) {
             const reps = await this.$axios.get("https://aws.random.cat/meow")
             newImgSrc.push(reps.data.file)
         }
@@ -141,5 +156,9 @@ export const actions = {
         commit('imgSrc', { newImgSrc })
         commit('flg', { newFlg })
         commit('cardPairs', { newcardPairs })
+    },
+    chNum ({ commit, state }, { howManyCards }) {
+        const newHowManyCards = howManyCards
+        commit('howManyCards', { newHowManyCards })
     },
 }
