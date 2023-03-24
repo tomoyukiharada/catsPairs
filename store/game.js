@@ -7,6 +7,7 @@ export const state = () => ({
     cardPairs: [0,0,1,1,2,2,3,3],
     count: 0,
     isReact: true,
+    imgSrc: [],
 })
 
 export const getters = {
@@ -22,6 +23,9 @@ export const getters = {
     isReact(state) {
         return state.isReact
     },
+    imgSrc(state) {
+        return state.imgSrc
+    },
 }
 
 export const mutations = {
@@ -36,6 +40,9 @@ export const mutations = {
     },
     isReact(state, { newIsReact }) {
         state.isReact = newIsReact
+    },
+    imgSrc(state, { newImgSrc }) {
+        state.imgSrc = newImgSrc
     },
 }
 
@@ -57,22 +64,19 @@ export const actions = {
             }
             commit('flg', { newFlg })
 
+            //count
+            const newCount = state.count + 1
+            commit('count', { newCount })
+
             //終了条件
             //calcnumOpened
             let filter = newFlg.filter((num) => num === OPENED)
             const numOpened = filter.length
-            if (numOpened === 8) {
-                //initializer
-                newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
-            }
-            commit('flg', { newFlg })
+            // if (numOpened === 8) actions.initializer({ commit, state })
+            if (numOpened === 8) location.reload()
 
             newIsReact = true
             commit('isReact', { newIsReact })
-
-            //count
-            const newCount = state.count + 1
-            commit('count', { newCount })   
         }
 
         if (newIsReact) {
@@ -112,18 +116,14 @@ export const actions = {
                 newIsReact = false
                 setTimeout(isPair, 1000, newcardPairs, firstindex, lastindex)
             }
-
-            //commit
             commit('flg', { newFlg })
             commit('cardPairs', { newcardPairs })
         }
-        // commmit
         commit('isReact', { newIsReact })
     },
-    initializer ({commit, state}) {
-        //カードをすべて裏にする
+    async initializer ({commit, state}) {
         const newFlg = [CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED, CLOSED]
-        //カードのペアをシャッフルする
+        
         let newcardPairs = state.cardPairs
         for (let i = 1; i < newcardPairs.length; i++) {
             const index = newcardPairs[Math.floor(Math.random() * (newcardPairs.length - i)) + i]
@@ -131,8 +131,14 @@ export const actions = {
             newcardPairs[index] = newcardPairs[i]
             newcardPairs[i] = stack
         }
-        console.log('シャッフル後' + newcardPairs)
-        //commit
+
+        let newImgSrc = []
+        for (let i = 0; i < 4; i++) {
+            const reps = await this.$axios.get("https://aws.random.cat/meow")
+            newImgSrc.push(reps.data.file)
+        }
+
+        commit('imgSrc', { newImgSrc })
         commit('flg', { newFlg })
         commit('cardPairs', { newcardPairs })
     },
