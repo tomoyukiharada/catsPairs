@@ -1,12 +1,13 @@
 <template>
     <div>
-        <v-card class="card" :img="cardImg" @click="handler(idx)" :height="210" :width="140">
+        <v-card outlined class="card" :img="cardImg" @click="handler(idx)" :height="210" :width="140">
         </v-card>
     </div>
 </template>
 
 <script>
 export default {
+    name: 'CardPage',
     props: ["idx"],
     computed: {
         cardImg() {
@@ -30,4 +31,12 @@ export default {
     font-size: 60px;
     text-align: center;
 }
+/* cardHeight() {
+    const height = window.height
+    return 210
+},
+    cardWidth() {
+    const width = window.width
+    return 140
+}, */
 </style>
